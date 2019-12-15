@@ -372,9 +372,9 @@ class ZiroomSpider(scrapy.Spider):
             items["price_zd_pre"] = self.parse_price(price_url_pre, price_zd_pre)
         items["price_zd"] = self.parse_price(price_url, price_zd)
 
-        print(items)
+        # print(items)
 
-        # yield items
+        yield items
 
     # 识别图片价格
     def parse_price(self, price_url, price_offset):
