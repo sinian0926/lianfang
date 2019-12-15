@@ -41,14 +41,19 @@ class ZiroomSpider(scrapy.Spider):
     def page_parse(self, response):
         # 接收items对象
         items = response.meta['ul']
+        # 网页正文
         content = response.text
-        items["room_id"] = re.findall(r'"room_id":"(\d+)"', content)[0]
-        items["city_code"] = re.findall(r'"city_code":"(\d+)"', content)[0]
-        items["house_id"] = re.findall(r'"house_id":"(\d+)"', content)[0]
         # 网页主体
         selector = response.xpath("//section[@class='Z_container Z_main']")
         # 右侧边栏
         right = selector.xpath("./aside[@class='Z_info_aside']")
+
+        # 房屋ID
+        items["room_id"] = re.findall(r'"room_id":"(\d+)"', content)[0]
+        # 城市ID
+        items["city_code"] = re.findall(r'"city_code":"(\d+)"', content)[0]
+        # 房间ID
+        items["house_id"] = re.findall(r'"house_id":"(\d+)"', content)[0]
         # 是否可租
         pre_status = right.xpath("//h1[@class='Z_name']/i/@class").extract_first()
         if pre_status.find("pre") != -1:
