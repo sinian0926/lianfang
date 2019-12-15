@@ -11,6 +11,12 @@ import scrapy
 class ZufangSpiderItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
+    # 房屋ID
+    room_id = scrapy.Field()
+    # 房间ID
+    house_id = scrapy.Field()
+    # 城市编号
+    city_code = scrapy.Field()
     # 房屋URL
     url = scrapy.Field()
     # 房屋编号

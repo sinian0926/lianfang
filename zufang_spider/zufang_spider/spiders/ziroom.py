@@ -16,6 +16,10 @@ class ZiroomSpider(scrapy.Spider):
     name = 'ziroom'
     allowed_domains = ['ziroom.com']
     start_urls = ['http://www.ziroom.com/z/p1/']
+    # 价格图片地址
+    p_url = ""
+    # 价格图片数据
+    data = None
 
     def parse(self, response):
         items = ziroom_items()
@@ -29,14 +33,18 @@ class ZiroomSpider(scrapy.Spider):
             items["url"] = url
 
             yield scrapy.Request(url=url, meta={'ul': items}, callback=self.page_parse)
-        # # 翻页
-        # for x in range(1, 51):
-        #     yield scrapy.Request(
-        #         url='http://www.ziroom.com/z/p' + str(x) + '/', callback=self.parse)
+        # 翻页
+        for x in range(1, 51):
+            yield scrapy.Request(
+                url='http://www.ziroom.com/z/p' + str(x) + '/', callback=self.parse)
 
     def page_parse(self, response):
         # 接收items对象
         items = response.meta['ul']
+        content = response.text
+        items["room_id"] = re.findall(r'"room_id":"(\d+)"', content)[0]
+        items["city_code"] = re.findall(r'"city_code":"(\d+)"', content)[0]
+        items["house_id"] = re.findall(r'"house_id":"(\d+)"', content)[0]
         # 网页主体
         selector = response.xpath("//section[@class='Z_container Z_main']")
         # 右侧边栏
@@ -177,87 +185,186 @@ class ZiroomSpider(scrapy.Spider):
         imgs[0] = imgs[0].replace("https:", "")
         items["imgs"] = ["https:" + img_url for img_url in imgs]
 
-        # 价格
+        # 月付
+        mouth = response.xpath("//div[@id='Z_payWay']/table//tr[1]")
         # 价格_月付
-        price_m_style = response.xpath(
-            "//div[@id='Z_payWay']/table//tr[1]/td[2]/span[@class='way_num']/@style").extract()
+        price_m_style = mouth.xpath("./td[2]/span[@class='way_num']/@style").extract()
         # 价格_月付偏移
         price_m = [re.findall("background-position: (.*?)px", num)[0] for num in price_m_style]
         # 价格图片地址
         price_url = 'http:' + re.findall(".*\((.*?)\)", price_m_style[0])[0]
         items["price_url"] = price_url
+        # 有折扣时
+        if len(price_m) <= 0:
+            price_m_pre_style = mouth.xpath("./td[2]/span[@class='re']/span[@class='way_num']/@style").extract()
+            price_m_pre = [re.findall("background-position: (.*?)px", num)[0] for num in price_m_pre_style]
+            # 价格图片地址
+            price_url_pre = 'http:' + re.findall(".*\((.*?)\)", price_m_pre_style[0])[0]
+            items["price_m_pre"] = self.parse_price(price_url_pre, price_m_pre)
         items["price_m"] = self.parse_price(price_url, price_m)
         # 服务费_月付
-        price_ms_style = response.xpath(
-            "//div[@id='Z_payWay']/table//tr[1]/td[3]/span[@class='way_num']/@style").extract()
+        price_ms_style = mouth.xpath("./td[3]/span[@class='way_num']/@style").extract()
         # 服务费_月付偏移
         price_ms = [re.findall("background-position: (.*?)px", num)[0] for num in price_ms_style]
+        # 有折扣时
+        if len(price_ms) <= 0:
+            price_ms_pre_style = mouth.xpath("./td[3]/span[@class='re']/span[@class='way_num']/@style").extract()
+            price_ms_pre = [re.findall("background-position: (.*?)px", num)[0] for num in price_ms_pre_style]
+            # 价格图片地址
+            price_url_pre = 'http:' + re.findall(".*\((.*?)\)", price_ms_pre_style[0])[0]
+            items["price_ms_pre"] = self.parse_price(price_url_pre, price_ms_pre)
         items["price_ms"] = self.parse_price(price_url, price_ms)
         # 押金_月付
-        price_md_style = response.xpath(
-            "//div[@id='Z_payWay']/table//tr[1]/td[4]/span[@class='way_num']/@style").extract()
+        price_md_style = mouth.xpath("./td[4]/span[@class='way_num']/@style").extract()
         # 押金_月付偏移
         price_md = [re.findall("background-position: (.*?)px", num)[0] for num in price_md_style]
+        # 有折扣时
+        if len(price_md) <= 0:
+            price_md_pre_style = mouth.xpath("./td[4]/span[@class='re']/span[@class='way_num']/@style").extract()
+            price_md_pre = [re.findall("background-position: (.*?)px", num)[0] for num in price_md_pre_style]
+            # 价格图片地址
+            price_url_pre = 'http:' + re.findall(".*\((.*?)\)", price_md_pre_style[0])[0]
+            items["price_md_pre"] = self.parse_price(price_url_pre, price_md_pre)
         items["price_md"] = self.parse_price(price_url, price_md)
+
         # 价格_季付
-        price_q_style = response.xpath(
-            "//div[@id='Z_payWay']/table//tr[2]/td[2]/span[@class='way_num']/@style").extract()
+        quarter = response.xpath("//div[@id='Z_payWay']/table//tr[2]")
+        price_q_style = quarter.xpath("./td[2]/span[@class='way_num']/@style").extract()
         price_q = [re.findall("background-position: (.*?)px", num)[0] for num in price_q_style]
+        # 有折扣时
+        if len(price_q) <= 0:
+            price_q_pre_style = quarter.xpath("./td[2]/span[@class='re']/span[@class='way_num']/@style").extract()
+            price_q_pre = [re.findall("background-position: (.*?)px", num)[0] for num in price_q_pre_style]
+            # 价格图片地址
+            price_url_pre = 'http:' + re.findall(".*\((.*?)\)", price_q_pre_style[0])[0]
+            items["price_q_pre"] = self.parse_price(price_url_pre, price_q_pre)
         items["price_q"] = self.parse_price(price_url, price_q)
         # 服务费_季付
-        price_qs_style = response.xpath(
-            "//div[@id='Z_payWay']/table//tr[2]/td[3]/span[@class='way_num']/@style").extract()
+        price_qs_style = quarter.xpath("./td[3]/span[@class='way_num']/@style").extract()
         price_qs = [re.findall("background-position: (.*?)px", num)[0] for num in price_qs_style]
+        # 有折扣时
+        if len(price_qs) <= 0:
+            price_qs_pre_style = quarter.xpath("./td[3]/span[@class='re']/span[@class='way_num']/@style").extract()
+            price_qs_pre = [re.findall("background-position: (.*?)px", num)[0] for num in price_qs_pre_style]
+            # 价格图片地址
+            price_url_pre = 'http:' + re.findall(".*\((.*?)\)", price_qs_pre_style[0])[0]
+            items["price_qs_pre"] = self.parse_price(price_url_pre, price_qs_pre)
         items["price_qs"] = self.parse_price(price_url, price_qs)
         # 押金_季付
-        price_qd_style = response.xpath(
-            "//div[@id='Z_payWay']/table//tr[2]/td[4]/span[@class='way_num']/@style").extract()
+        price_qd_style = quarter.xpath("./td[4]/span[@class='way_num']/@style").extract()
         price_qd = [re.findall("background-position: (.*?)px", num)[0] for num in price_qd_style]
+        # 有折扣时
+        if len(price_qd) <= 0:
+            price_qd_pre_style = quarter.xpath("./td[4]/span[@class='re']/span[@class='way_num']/@style").extract()
+            price_qd_pre = [re.findall("background-position: (.*?)px", num)[0] for num in price_qd_pre_style]
+            # 价格图片地址
+            price_url_pre = 'http:' + re.findall(".*\((.*?)\)", price_qd_pre_style[0])[0]
+            items["price_qd_pre"] = self.parse_price(price_url_pre, price_qd_pre)
         items["price_qd"] = self.parse_price(price_url, price_qd)
+
         # 价格_半年付
-        price_h_style = response.xpath(
-            "//div[@id='Z_payWay']/table//tr[3]/td[2]/span[@class='way_num']/@style").extract()
+        half = response.xpath("//div[@id='Z_payWay']/table//tr[3]")
+        price_h_style = half.xpath("./td[2]/span[@class='way_num']/@style").extract()
         price_h = [re.findall("background-position: (.*?)px", num)[0] for num in price_h_style]
+        # 有折扣时
+        if len(price_h) <= 0:
+            price_h_pre_style = half.xpath("./td[2]/span[@class='re']/span[@class='way_num']/@style").extract()
+            price_h_pre = [re.findall("background-position: (.*?)px", num)[0] for num in price_h_pre_style]
+            # 价格图片地址
+            price_url_pre = 'http:' + re.findall(".*\((.*?)\)", price_h_pre_style[0])[0]
+            items["price_qd_pre"] = self.parse_price(price_url_pre, price_h_pre)
         items["price_h"] = self.parse_price(price_url, price_h)
         # 服务费_半年付
-        price_hs_style = response.xpath(
-            "//div[@id='Z_payWay']/table//tr[3]/td[3]/span[@class='way_num']/@style").extract()
+        price_hs_style = half.xpath("./td[3]/span[@class='way_num']/@style").extract()
         price_hs = [re.findall("background-position: (.*?)px", num)[0] for num in price_hs_style]
+        # 有折扣时
+        if len(price_hs) <= 0:
+            price_hs_pre_style = half.xpath("./td[3]/span[@class='re']/span[@class='way_num']/@style").extract()
+            price_hs_pre = [re.findall("background-position: (.*?)px", num)[0] for num in price_hs_pre_style]
+            # 价格图片地址
+            price_url_pre = 'http:' + re.findall(".*\((.*?)\)", price_hs_pre_style[0])[0]
+            items["price_hs_pre"] = self.parse_price(price_url_pre, price_hs_pre)
         items["price_hs"] = self.parse_price(price_url, price_hs)
         # 押金_半年付
-        price_hd_style = response.xpath(
-            "//div[@id='Z_payWay']/table//tr[3]/td[4]/span[@class='way_num']/@style").extract()
+        price_hd_style = half.xpath("./td[4]/span[@class='way_num']/@style").extract()
         price_hd = [re.findall("background-position: (.*?)px", num)[0] for num in price_hd_style]
+        # 有折扣时
+        if len(price_hd) <= 0:
+            price_hd_pre_style = half.xpath("./td[4]/span[@class='re']/span[@class='way_num']/@style").extract()
+            price_hd_pre = [re.findall("background-position: (.*?)px", num)[0] for num in price_hd_pre_style]
+            # 价格图片地址
+            price_url_pre = 'http:' + re.findall(".*\((.*?)\)", price_hd_pre_style[0])[0]
+            items["price_hd_pre"] = self.parse_price(price_url_pre, price_hd_pre)
         items["price_hd"] = self.parse_price(price_url, price_hd)
+
         # 价格_年付
-        price_y_style = response.xpath(
-            "//div[@id='Z_payWay']/table//tr[4]/td[2]/span[@class='way_num']/@style").extract()
+        year = response.xpath("//div[@id='Z_payWay']/table//tr[4]")
+        price_y_style = year.xpath("./td[2]/span[@class='way_num']/@style").extract()
         price_y = [re.findall("background-position: (.*?)px", num)[0] for num in price_y_style]
+        # 有折扣时
+        if len(price_y) <= 0:
+            price_y_pre_style = year.xpath("./td[2]/span[@class='re']/span[@class='way_num']/@style").extract()
+            price_y_pre = [re.findall("background-position: (.*?)px", num)[0] for num in price_y_pre_style]
+            # 价格图片地址
+            price_url_pre = 'http:' + re.findall(".*\((.*?)\)", price_y_pre_style[0])[0]
+            items["price_y_pre"] = self.parse_price(price_url_pre, price_y_pre)
         items["price_y"] = self.parse_price(price_url, price_y)
         # 服务费_年付
-        price_ys_style = response.xpath(
-            "//div[@id='Z_payWay']/table//tr[4]/td[3]/span[@class='way_num']/@style").extract()
+        price_ys_style = year.xpath("./td[3]/span[@class='way_num']/@style").extract()
         price_ys = [re.findall("background-position: (.*?)px", num)[0] for num in price_ys_style]
+        # 有折扣时
+        if len(price_ys) <= 0:
+            price_ys_pre_style = year.xpath("./td[3]/span[@class='re']/span[@class='way_num']/@style").extract()
+            price_ys_pre = [re.findall("background-position: (.*?)px", num)[0] for num in price_ys_pre_style]
+            # 价格图片地址
+            price_url_pre = 'http:' + re.findall(".*\((.*?)\)", price_ys_pre_style[0])[0]
+            items["price_ys_pre"] = self.parse_price(price_url_pre, price_ys_pre)
         items["price_ys"] = self.parse_price(price_url, price_ys)
         # 押金_年付
-        price_yd_style = response.xpath(
-            "//div[@id='Z_payWay']/table//tr[4]/td[4]/span[@class='way_num']/@style").extract()
+        price_yd_style = year.xpath("./td[4]/span[@class='way_num']/@style").extract()
         price_yd = [re.findall("background-position: (.*?)px", num)[0] for num in price_yd_style]
+        # 有折扣时
+        if len(price_yd) <= 0:
+            price_yd_pre_style = year.xpath("./td[4]/span[@class='re']/span[@class='way_num']/@style").extract()
+            price_yd_pre = [re.findall("background-position: (.*?)px", num)[0] for num in price_yd_pre_style]
+            # 价格图片地址
+            price_url_pre = 'http:' + re.findall(".*\((.*?)\)", price_yd_pre_style[0])[0]
+            items["price_yd_pre"] = self.parse_price(price_url_pre, price_yd_pre)
         items["price_yd"] = self.parse_price(price_url, price_yd)
+
         # 价格_自如客
-        price_z_style = response.xpath(
-            "//div[@id='Z_payWay']/table//tr[5]/td[2]/span[@class='way_num']/@style").extract()
+        ziroom = response.xpath("//div[@id='Z_payWay']/table//tr[5]")
+        price_z_style = ziroom.xpath("./td[2]/span[@class='way_num']/@style").extract()
         price_z = [re.findall("background-position: (.*?)px", num)[0] for num in price_z_style]
+        # 有折扣时
+        if len(price_z) <= 0:
+            price_z_pre_style = ziroom.xpath("./td[2]/span[@class='re']/span[@class='way_num']/@style").extract()
+            price_z_pre = [re.findall("background-position: (.*?)px", num)[0] for num in price_z_pre_style]
+            # 价格图片地址
+            price_url_pre = 'http:' + re.findall(".*\((.*?)\)", price_z_pre_style[0])[0]
+            items["price_z_pre"] = self.parse_price(price_url_pre, price_z_pre)
         items["price_z"] = self.parse_price(price_url, price_z)
         # 服务费_自如客
-        price_zs_style = response.xpath(
-            "//div[@id='Z_payWay']/table//tr[5]/td[3]/span[@class='way_num']/@style").extract()
+        price_zs_style = ziroom.xpath("./td[3]/span[@class='way_num']/@style").extract()
         price_zs = [re.findall("background-position: (.*?)px", num)[0] for num in price_zs_style]
+        # 有折扣时
+        if len(price_zs) <= 0:
+            price_zs_pre_style = ziroom.xpath("./td[3]/span[@class='re']/span[@class='way_num']/@style").extract()
+            price_zs_pre = [re.findall("background-position: (.*?)px", num)[0] for num in price_zs_pre_style]
+            # 价格图片地址
+            price_url_pre = 'http:' + re.findall(".*\((.*?)\)", price_zs_pre_style[0])[0]
+            items["price_zs_pre"] = self.parse_price(price_url_pre, price_zs_pre)
         items["price_zs"] = self.parse_price(price_url, price_zs)
         # 押金_自如客
-        price_zd_style = response.xpath(
-            "//div[@id='Z_payWay']/table//tr[5]/td[4]/span[@class='way_num']/@style").extract()
+        price_zd_style = ziroom.xpath("./td[4]/span[@class='way_num']/@style").extract()
         price_zd = [re.findall("background-position: (.*?)px", num)[0] for num in price_zd_style]
+        # 有折扣时
+        if len(price_zd) <= 0:
+            price_zd_pre_style = ziroom.xpath("./td[4]/span[@class='re']/span[@class='way_num']/@style").extract()
+            price_zd_pre = [re.findall("background-position: (.*?)px", num)[0] for num in price_zd_pre_style]
+            # 价格图片地址
+            price_url_pre = 'http:' + re.findall(".*\((.*?)\)", price_zd_pre_style[0])[0]
+            items["price_zd_pre"] = self.parse_price(price_url_pre, price_zd_pre)
         items["price_zd"] = self.parse_price(price_url, price_zd)
 
         print(items)
@@ -271,8 +378,11 @@ class ZiroomSpider(scrapy.Spider):
             return 0
 
         price_list = ["-0", "-18.1", "-36.2", "-54.3", "-72.4", "-90.5", "-108.6", "-126.7", "-144.8", "-162.9"]
-        data = requests.get(url=price_url).content
-        image = Image.open(io.BytesIO(data))
+        if self.p_url.__ne__(price_url):
+            self.data = requests.get(url=price_url).content
+            self.p_url = price_url
+
+        image = Image.open(io.BytesIO(self.data))
         vcode = pytesseract.image_to_string(image, lang='eng',
                                             config='--psm 6 --oem 3 -c tessedit_char_whitelist=0123456789').strip()
         ret_list = []
@@ -285,4 +395,3 @@ class ZiroomSpider(scrapy.Spider):
         res = dict(zip(price_list, ret_list))
         price = [res.get(p, "") for p in price_offset]
         return int(''.join(price))
-
