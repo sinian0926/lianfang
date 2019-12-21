@@ -6,11 +6,14 @@
 # https://docs.scrapy.org/en/latest/topics/items.html
 
 import scrapy
+from scrapy.loader.processors import MapCompose
 
 
 class ZufangSpiderItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
+    # iuput_processor = MapCompose(),
+    # output_processor = MapCompose()
     # 房屋ID
     room_id = scrapy.Field()
     # 房间ID
@@ -37,69 +40,129 @@ class ZufangSpiderItem(scrapy.Item):
     price_url_path = scrapy.Field()
 
     # 价格_月付
-    price_m = scrapy.Field()
+    price_m = scrapy.Field(
+        
+    )
     # 价格_月付_原价
-    price_m_pre = scrapy.Field()
+    price_m_pre = scrapy.Field(
+        
+    )
     # 服务费/年_月付
-    price_ms = scrapy.Field()
+    price_ms = scrapy.Field(
+        
+    )
     # 服务费/年_月付_原价
-    price_ms_pre = scrapy.Field()
+    price_ms_pre = scrapy.Field(
+        
+    )
     # 押金_月付
-    price_md = scrapy.Field()
+    price_md = scrapy.Field(
+        
+    )
     # 押金_月付_原价
-    price_md_pre = scrapy.Field()
+    price_md_pre = scrapy.Field(
+        
+    )
 
     # 价格_季付
-    price_q = scrapy.Field()
+    price_q = scrapy.Field(
+        
+    )
     # 价格_季付_原价
-    price_q_pre = scrapy.Field()
+    price_q_pre = scrapy.Field(
+        
+    )
     # 服务费/年_季付
-    price_qs = scrapy.Field()
+    price_qs = scrapy.Field(
+        
+    )
     # 服务费/年_季付_原价
-    price_qs_pre = scrapy.Field()
+    price_qs_pre = scrapy.Field(
+        
+    )
     # 押金_季付
-    price_qd = scrapy.Field()
+    price_qd = scrapy.Field(
+        
+    )
     # 押金_季付_原价
-    price_qd_pre = scrapy.Field()
+    price_qd_pre = scrapy.Field(
+        
+    )
 
     # 价格_半年付
-    price_h = scrapy.Field()
+    price_h = scrapy.Field(
+        
+    )
     # 价格_半年付_原价
-    price_h_pre = scrapy.Field()
+    price_h_pre = scrapy.Field(
+        
+    )
     # 服务费/年_半年付
-    price_hs = scrapy.Field()
+    price_hs = scrapy.Field(
+        
+    )
     # 服务费/年_半年付_原价
-    price_hs_pre = scrapy.Field()
+    price_hs_pre = scrapy.Field(
+        
+    )
     # 押金_半年付
-    price_hd = scrapy.Field()
+    price_hd = scrapy.Field(
+        
+    )
     # 押金_半年付_原价
-    price_hd_pre = scrapy.Field()
+    price_hd_pre = scrapy.Field(
+        
+    )
 
     # 价格_年付
-    price_y = scrapy.Field()
+    price_y = scrapy.Field(
+        
+    )
     # 价格_年付_原价
-    price_y_pre = scrapy.Field()
+    price_y_pre = scrapy.Field(
+        
+    )
     # 服务费/年_年付
-    price_ys = scrapy.Field()
+    price_ys = scrapy.Field(
+        
+    )
     # 服务费/年_年付_原价
-    price_ys_pre = scrapy.Field()
+    price_ys_pre = scrapy.Field(
+        
+    )
     # 押金_年付
-    price_yd = scrapy.Field()
+    price_yd = scrapy.Field(
+        
+    )
     # 押金_年付_原价
-    price_yd_pre = scrapy.Field()
+    price_yd_pre = scrapy.Field(
+        
+    )
 
     # 价格_自如客
-    price_z = scrapy.Field()
+    price_z = scrapy.Field(
+        
+    )
     # 价格_自如客_原价
-    price_z_pre = scrapy.Field()
+    price_z_pre = scrapy.Field(
+        
+    )
     # 服务费/年_自如客
-    price_zs = scrapy.Field()
+    price_zs = scrapy.Field(
+        
+    )
     # 服务费/年_自如客_原价
-    price_zs_pre = scrapy.Field()
+    price_zs_pre = scrapy.Field(
+        
+    )
     # 押金_自如客
-    price_zd = scrapy.Field()
+    price_zd = scrapy.Field(
+        
+    )
     # 押金_自如客_原价
-    price_zd_pre = scrapy.Field()
+    price_zd_pre = scrapy.Field(
+        
+    )
 
     # 优惠
     tip = scrapy.Field()
@@ -115,11 +178,6 @@ class ZufangSpiderItem(scrapy.Item):
     labels = scrapy.Field()
     # 房屋标签
     tags = scrapy.Field()
-    # tags2 = scrapy.Field()
-    # tags3 = scrapy.Field()
-    # tags4 = scrapy.Field()
-    # tags5 = scrapy.Field()
-    # tags6 = scrapy.Field()
     # 建筑面积
     area_room = scrapy.Field()
     # 朝向
@@ -154,28 +212,23 @@ class ZufangSpiderItem(scrapy.Item):
     house_type = scrapy.Field()
 
     # 小区信息
-    # 名称
+    # 小区名称
     jname = scrapy.Field()
-    # 建筑年代
+    # 小区建筑年代
     jtime = scrapy.Field()
-    # 建筑类型
+    # 小区建筑类型
     jtype = scrapy.Field()
-    # 供暖方式
+    # 小区供暖方式
     jheating = scrapy.Field()
-    # 绿化率
+    # 小区绿化率
     jgreen = scrapy.Field()
-    # 容积率
+    # 小区容积率
     plot_ratio = scrapy.Field()
-    # 物业公司
+    # 小区物业公司
     property = scrapy.Field()
-    # 物业电话
+    # 小区物业电话
     property_ph = scrapy.Field()
-
-
-
-
-
-
-
-
-
+    # 抓取时间
+    create_time = scrapy.Field()
+    # 修改时间
+    modify_time = scrapy.Field()

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Scrapy settings for zufang_spider project
+# Scrapy settings for ziroom_spider project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -9,12 +9,11 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 import os
-from zufang_spider.items import ZufangSpiderItem as items
 
-BOT_NAME = 'zufang_spider'
+BOT_NAME = 'ziroom_spider'
 
-SPIDER_MODULES = ['zufang_spider.spiders']
-NEWSPIDER_MODULE = 'zufang_spider.spiders'
+SPIDER_MODULES = ['ziroom_spider.spiders']
+NEWSPIDER_MODULE = 'ziroom_spider.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENT = '"Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0"'
@@ -48,15 +47,15 @@ DOWNLOAD_DELAY = 3
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 # SPIDER_MIDDLEWARES = {
-#    'zufang_spider.middlewares.ZufangSpiderSpiderMiddleware': 543,
+#    'ziroom_spider.middlewares.ZufangSpiderSpiderMiddleware': 543,
 # }
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    # 'zufang_spider.middlewares.ZufangSpiderDownloaderMiddleware': 543,
+    # 'ziroom_spider.middlewares.ZufangSpiderDownloaderMiddleware': 543,
     # 随机 User-Agent
-    'zufang_spider.middlewares.rand_UA': 100,
+    'ziroom_spider.middlewares.rand_UA': 100,
 }
 
 # Enable or disable extensions
@@ -68,8 +67,9 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'zufang_spider.pipelines.ZufangSpiderPipeline': 300,
-    'zufang_spider.pipelines.ZiroomImagesPipeline': 1,
+    'ziroom_spider.pipelines.ZufangSpiderPipeline': 300,
+    'ziroom_spider.pipelines.ZiroomImagesPipeline': 1,
+    'ziroom_spider.pipelines.ZufangMySQLPipeline': 299,
 
 }
 # 图片下载
@@ -96,3 +96,8 @@ IMAGES_STORE = os.path.join(project_dir, "ziroom_imgs/")
 # HTTPCACHE_DIR = 'httpcache'
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+MYSQL_HOST = '127.0.0.1'
+MYSQL_DB = 'BPSOFT'
+MYSQL_USER = 'root'
+MYSQL_PASSWD = 'bpdb110'
